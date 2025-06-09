@@ -9,6 +9,7 @@ import (
 
 func main() {
 	defer golog.Sync()
+	golog.ShowBasePath = true
 	a := golog.NewLog("", 0, false, 10)
 	a.Info("foo", "aaaa", "bb")
 	a.Info(color.New(color.BgYellow).Sprint("aaaa"), color.New(color.BgBlue).Sprint("bbbb"))

@@ -210,11 +210,16 @@ func arrToString(msg ...interface{}) string {
 
 func s(level level, msg string, deep ...int) {
 	if len(deep) > 0 && deep[0] > 0 {
-		msg = fmt.Sprintf("caller from %s -- %v", printFileline(deep[0]), msg)
+		if ShowBasePath {
+			msg = fmt.Sprintf("caller from %s -- %v", printBaseFileline(deep[0]), msg)
+		} else {
+			msg = fmt.Sprintf("caller from %s -- %v", printFileline(deep[0]), msg)
+		}
+
 	}
 
 	now := time.Now()
-	cache <- msgLog{
+	ml := msgLog{
 		Msg:      msg,
 		Level:    level,
 		name:     name,
@@ -230,5 +235,10 @@ func s(level level, msg string, deep ...int) {
 		format:   Format,
 		Label:    GetLabel(),
 	}
+	if ShowBasePath {
+		ml.Line = printBaseFileline(0)
+	}
+
+	cache <- ml
 
 }
