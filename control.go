@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"runtime"
 	"text/template"
@@ -118,4 +119,15 @@ func printFileline(c int) string {
 		line = 0
 	}
 	return fmt.Sprintf("%s:%d", file, line)
+}
+
+func printBaseFileline(c int) string {
+	c += 3
+	_, file, line, ok := runtime.Caller(c)
+	if !ok {
+		file = "???"
+		line = 0
+	}
+	fileBase := path.Base(file)
+	return fmt.Sprintf("%s:%d", fileBase, line)
 }

@@ -3,7 +3,6 @@ package golog
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -12,6 +11,8 @@ import (
 
 	"github.com/fatih/color"
 )
+
+var ShowBasePath bool
 
 type Log struct {
 	Create   time.Time
@@ -35,7 +36,7 @@ func (l *Log) clean(ctx context.Context) {
 	for {
 		select {
 		case <-time.After(time.Duration(l.Expire) * time.Hour * 24):
-			fs, err := ioutil.ReadDir(l.Dir)
+			fs, err := os.ReadDir(l.Dir)
 			if err != nil {
 				continue
 			}
@@ -218,7 +219,12 @@ func (l *Log) UpFunc(deep int, msg ...interface{}) {
 
 func (l *Log) s(level level, msg string, deep ...int) {
 	if len(deep) > 0 && deep[0] > 0 {
-		msg = fmt.Sprintf("caller from %s -- %v", printFileline(deep[0]), msg)
+		if ShowBasePath {
+			msg = fmt.Sprintf("caller from %s -- %v", printBaseFileline(deep[0]), msg)
+		} else {
+			msg = fmt.Sprintf("caller from %s -- %v", printFileline(deep[0]), msg)
+		}
+
 	}
 	// pre := ""
 	// for k, v := range l.Label {
@@ -228,7 +234,7 @@ func (l *Log) s(level level, msg string, deep ...int) {
 		l.Format = Format
 	}
 	now := time.Now()
-	cache <- msgLog{
+	ml := msgLog{
 		// Prev:    pre,
 		Msg:      msg,
 		Level:    level,
@@ -245,4 +251,8 @@ func (l *Log) s(level level, msg string, deep ...int) {
 		format:   l.Format,
 		Label:    l.GetLabel(),
 	}
+	if ShowBasePath {
+		ml.Line = printBaseFileline(0)
+	}
+	cache <- ml
 }
